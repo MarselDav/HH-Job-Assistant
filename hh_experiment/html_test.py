@@ -27,6 +27,7 @@ response = requests.get(
 
 response.raise_for_status()
 
+
 print("Status:", response.status_code)
 print("URL:", response.url)
 print("Content-Type:", response.headers.get("Content-Type"))

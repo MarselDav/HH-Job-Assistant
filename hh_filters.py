@@ -8,6 +8,15 @@ AREAS_URL = "https://api.hh.ru/areas"
 INDUSTRIES_URL = "https://api.hh.ru/industries"
 PROFESSIONAL_ROLES_URL = "https://api.hh.ru/professional_roles"
 
+DICTIONARIES_PARAMS_LIST = ["experience",
+                            "employment_form",
+                            "work_format",
+                            "working_hours",
+                            "work_schedule_by_days",
+                            "vacancy_label",
+                            "vacancy_search_order"]
+
+
 class HHFilterParser:
     def __init__(self):
         self.headers = {"User-Agent": "Mozilla/5.0"}
@@ -25,15 +34,7 @@ class HHFilterParser:
 
     @staticmethod
     def parse_dictionaries(dictionaries_response: dict) -> dict:
-        dictionaries_dict = {
-            "experience": {},
-            "employment_form": {},
-            "work_format": {},
-            "working_hours": {},
-            "work_schedule_by_days": {},
-            "vacancy_label": {},
-            "vacancy_search_order": {}
-        }
+        dictionaries_dict = {param : {} for param in DICTIONARIES_PARAMS_LIST}
 
         for key in dictionaries_dict.keys():
             for parameter in dictionaries_response[key]:
@@ -69,8 +70,9 @@ class HHFilterParser:
             raise RuntimeError("Отсутствует Россия в areas_response")
 
         for area in areas_response_russia["areas"]:
+            areas_dict[area["name"]] = {"id" : area["id"], "areas" : {}}
             for city in area["areas"]:
-                areas_dict[city["name"]] = {"id": city["id"]}
+                areas_dict[area["name"]]["areas"][city["name"]] = {"id": city["id"]}
 
         # pprint(areas_dict, indent=4, width=100)
 
@@ -91,18 +93,19 @@ class HHFilterParser:
         return industries_dict
 
     def parse_all(self) -> dict:
-        dictionaries_dict = self.parse_dictionaries(self.get_json(DICTIONARIES_URL))
-        professional_roles_dict = self.parse_profession_roles(self.get_json(PROFESSIONAL_ROLES_URL))
-        areas_dict = self.parse_areas(self.get_json(AREAS_URL))
-        industries_dict = self.parse_industries(self.get_json(INDUSTRIES_URL))
+        dictionaries = self.parse_dictionaries(self.get_json(DICTIONARIES_URL))
+        professional_roles = self.parse_profession_roles(self.get_json(PROFESSIONAL_ROLES_URL))
+        areas = self.parse_areas(self.get_json(AREAS_URL))
+        industries = self.parse_industries(self.get_json(INDUSTRIES_URL))
 
         return {
             "meta" : {"generated_at" : datetime.now(timezone.utc).isoformat(timespec="seconds")},
-            "dictionaries": dictionaries_dict,
-            "professional_roles": professional_roles_dict,
-            "areas": areas_dict,
-            "industries": industries_dict
+            "dictionaries": dictionaries,
+            "professional_roles": professional_roles,
+            "areas": areas,
+            "industries": industries
         }
+
 
     @staticmethod
     def save_filters(filters : dict, path : str) -> None:
@@ -141,8 +144,8 @@ class HHFilters:
     def get_dictionaries_names(self, category) -> list:
         return self.filters["dictionaries"][category].keys()
 
-    def get_dictionaries_name_id(self, category, name) -> list:
-        return self.filters["dictionaries"][category][name]
+    def get_dictionaries_name_id(self, category, name) -> str:
+        return self.filters["dictionaries"][category][name]["id"]
 
     """
     Professional Roles Filters
@@ -151,13 +154,13 @@ class HHFilters:
         return self.filters["professional_roles"]
 
     def get_professional_roles_categories(self) -> list:
-        return self.filters["professional_roles"].keys()
+        return list(self.filters["professional_roles"])
 
     def get_professional_roles_category_id(self, category) -> str:
         return self.filters["professional_roles"][category]["id"]
 
     def get_professional_roles_category_roles(self, category) -> list:
-        return self.filters["professional_roles"][category]["roles"].keys()
+        return list(self.filters["professional_roles"][category]["roles"])
 
     def get_professional_roles_id(self, category, name) -> str:
         return self.filters["professional_roles"][category]["roles"][name]["id"]
@@ -168,11 +171,17 @@ class HHFilters:
     def get_areas(self) -> dict:
         return self.filters["areas"]
 
-    def get_areas_names(self) -> list:
-        return self.filters["areas"].keys()
+    def get_areas_categories(self) -> list:
+        return list(self.filters["areas"])
 
-    def get_areas_id(self, name: str) -> str:
-        return self.filters["areas"][name]["id"]
+    def get_areas_category_id(self, category: str) -> str:
+        return self.filters["areas"][category]["id"]
+
+    def get_areas_category_areas(self, category: str) -> list:
+        return list(self.filters["areas"][category])
+
+    def get_areas_id(self, category: str, name: str) -> str:
+        return self.filters["areas"][category][name]["id"]
 
     """
     Industries Filters
@@ -181,13 +190,13 @@ class HHFilters:
         return self.filters["industries"]
 
     def get_industries_categories(self) -> list:
-        return self.filters["industries"].keys()
+        return list(self.filters["industries"])
 
     def get_industries_category_id(self, category) -> str:
         return self.filters["industries"][category]["id"]
 
     def get_industries_category_industries(self, category) -> list:
-        return self.filters["industries"][category]["industries"].keys()
+        return list(self.filters["industries"][category]["industries"])
 
     def get_industries_id(self, category, name) -> str:
         return self.filters["industries"][category]["industries"][name]["id"]
@@ -203,3 +212,7 @@ if __name__ == "__main__":
     parser = HHFilterParser()
     filters_ = parser.parse_all()
     parser.save_filters(filters_, "hh_filters.json")
+
+    # filter = HHFilters("hh_filters.json")
+    # keys = filter.get_areas_category_areas("Республика Марий Эл")
+    # print(keys)
