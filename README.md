@@ -24,14 +24,14 @@ Planned:
 
 
 Roadmap
-[x] HH reference data parser
-[ ] HH vacancy search
-[ ] Vacancy detail parser
-[ ] Candidate profile
-[ ] GitHub integration
-[ ] LLM integration
-[ ] Vacancy matching
-[ ] Cover letter generation
-[ ] Qt GUI
-[ ] PostgreSQL
-[ ] Application tracking
+- [x] HH reference data parser
+- [ ] HH vacancy search
+- [ ] Vacancy detail parser
+- [ ] Candidate profile
+- [ ] GitHub integration
+- [ ] LLM integration
+- [ ] Vacancy matching
+- [ ] Cover letter generation
+- [ ] Qt GUI
+- [ ] PostgreSQL
+- [ ] Application tracking

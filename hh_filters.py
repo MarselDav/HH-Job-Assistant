@@ -68,8 +68,6 @@ class HHFilterParser:
         if areas_response_russia is None:
             raise RuntimeError("Отсутствует Россия в areas_response")
 
-        # pprint(areas_response_russia["areas"][0], indent=4, width=100)
-
         for area in areas_response_russia["areas"]:
             for city in area["areas"]:
                 areas_dict[city["name"]] = {"id": city["id"]}
@@ -124,6 +122,81 @@ class HHFilterParser:
 
         with open(path, "w", encoding="utf-8") as file:
             json.dump(filters, file, ensure_ascii=False, indent=4)
+
+
+class HHFilters:
+    def __init__(self, path: str) -> None:
+        with open(path, "r", encoding="utf-8") as file:
+            self.filters = json.load(file)
+
+    """
+    Dictionaries Filters
+    """
+    def get_dictionaries(self) -> dict:
+        return self.filters["dictionaries"]
+
+    def get_dictionaries_categories(self) -> list:
+        return self.filters["dictionaries"].keys()
+
+    def get_dictionaries_names(self, category) -> list:
+        return self.filters["dictionaries"][category].keys()
+
+    def get_dictionaries_name_id(self, category, name) -> list:
+        return self.filters["dictionaries"][category][name]
+
+    """
+    Professional Roles Filters
+    """
+    def get_profession_roles(self) -> dict:
+        return self.filters["professional_roles"]
+
+    def get_professional_roles_categories(self) -> list:
+        return self.filters["professional_roles"].keys()
+
+    def get_professional_roles_category_id(self, category) -> str:
+        return self.filters["professional_roles"][category]["id"]
+
+    def get_professional_roles_category_roles(self, category) -> list:
+        return self.filters["professional_roles"][category]["roles"].keys()
+
+    def get_professional_roles_id(self, category, name) -> str:
+        return self.filters["professional_roles"][category]["roles"][name]["id"]
+
+    """
+    Areas Filters
+    """
+    def get_areas(self) -> dict:
+        return self.filters["areas"]
+
+    def get_areas_names(self) -> list:
+        return self.filters["areas"].keys()
+
+    def get_areas_id(self, name: str) -> str:
+        return self.filters["areas"][name]["id"]
+
+    """
+    Industries Filters
+    """
+    def get_industries(self) -> dict:
+        return self.filters["industries"]
+
+    def get_industries_categories(self) -> list:
+        return self.filters["industries"].keys()
+
+    def get_industries_category_id(self, category) -> str:
+        return self.filters["industries"][category]["id"]
+
+    def get_industries_category_industries(self, category) -> list:
+        return self.filters["industries"][category]["industries"].keys()
+
+    def get_industries_id(self, category, name) -> str:
+        return self.filters["industries"][category]["industries"][name]["id"]
+
+    """
+    Metadata
+    """
+    def get_metadata(self) -> dict:
+        return self.filters["meta"]
 
 
 if __name__ == "__main__":
