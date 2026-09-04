@@ -25,8 +25,8 @@ Planned:
 
 Roadmap
 - [x] HH reference data parser
-- [ ] HH vacancy search
-- [ ] Vacancy detail parser
+- [x] HH vacancy search
+- [x] Vacancy detail parser
 - [ ] Candidate profile
 - [ ] GitHub integration
 - [ ] LLM integration
