@@ -147,6 +147,15 @@ class HHFilters:
     def get_dictionaries_name_id(self, category, name) -> str:
         return self.filters["dictionaries"][category][name]["id"]
 
+    def get_dictionaries_name(self, dict_id : str) -> str:
+        for category, category_names in self.filters["dictionaries"].items():
+            for _name, _name_dict in category_names.items():
+                if _name_dict["id"] == dict_id:
+                    return _name
+
+        print("Не найдено имя с таким id; get_dictionaries_name ERROR")
+        return str()
+
     """
     Professional Roles Filters
     """
@@ -164,6 +173,19 @@ class HHFilters:
 
     def get_professional_roles_id(self, category, name) -> str:
         return self.filters["professional_roles"][category]["roles"][name]["id"]
+
+    def get_professional_roles_name(self, prof_role_id : str) -> str:
+        for category, category_dict in self.filters["professional_roles"].items():
+            if category_dict["id"] ==  prof_role_id:
+                return category
+
+            for role, role_dict in category_dict["roles"].items():
+                if role_dict["id"] == prof_role_id:
+                    return role
+
+        print("Не найдено имя с таким id; get_professional_roles_name ERROR")
+        return str()
+
 
     """
     Areas Filters
@@ -183,6 +205,18 @@ class HHFilters:
     def get_areas_id(self, category: str, name: str) -> str:
         return self.filters["areas"][category][name]["id"]
 
+    def get_areas_name(self, area_id: str) -> str:
+        for category, category_dict in self.filters["areas"].items():
+            if category_dict["id"] == area_id:
+                return category
+
+            for area, area_dict in category_dict["roles"].items():
+                if area_dict["id"] == area_id:
+                    return area
+
+        print("Не найдено имя с таким id; get_areas_name ERROR")
+        return str()
+
     """
     Industries Filters
     """
@@ -201,6 +235,18 @@ class HHFilters:
     def get_industries_id(self, category, name) -> str:
         return self.filters["industries"][category]["industries"][name]["id"]
 
+    def get_industries_name(self, industries_id) -> str:
+        for category, category_dict in self.filters["industries"].items():
+            if category_dict["id"] == industries_id:
+                return category
+
+            for industry, industry_dict in category_dict["industries"].items():
+                if industry_dict["id"] == industries_id:
+                    return industry
+
+        print("Не найдено имя с таким id; get_industries_name ERROR")
+        return str()
+
     """
     Metadata
     """
@@ -209,10 +255,12 @@ class HHFilters:
 
 
 if __name__ == "__main__":
-    parser = HHFilterParser()
-    filters_ = parser.parse_all()
-    parser.save_filters(filters_, "hh_filters.json")
+    # parser = HHFilterParser()
+    # filters_ = parser.parse_all()
+    # parser.save_filters(filters_, "hh_filters.json")
 
-    # filter = HHFilters("hh_filters.json")
-    # keys = filter.get_areas_category_areas("Республика Марий Эл")
-    # print(keys)
+    filter = HHFilters("hh_filters.json")
+    # name = filter.get_dictionaries_name("noExperience")
+    name = filter.get_professional_roles_name("4")
+
+    print(name)

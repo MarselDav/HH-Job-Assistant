@@ -34,7 +34,7 @@ class HHVacancyClient:
 
     def load_descriptions(self, vacancies_list : list[Vacancy]) -> None:
         for vacancy in vacancies_list:
-            if vacancy.id is not None and vacancy.description is not None:
+            if vacancy.id is not None and vacancy.description is None:
                 vacancy.description = self.get_vacancy_description(vacancy.id)
 
     def get_vacancy_description(self, vacancy_id: int) -> str:
@@ -162,19 +162,18 @@ class HHVacancyClient:
             return str()
 
         text = content_div.get_text(separator="\n", strip=True)  # strip - убрать лишние пробелы по краям
-
         return text
 
 if __name__ == "__main__":
-    vsf = VacancySearchFilters(
-        text="C++",
-        area=[Area("Москва", ""), Area("Санкт-Петербург", "")],
-        experience=["Нет опыта"],
-        work_format=["Удалённо"],
-    )
-
-    hh = HHVacancyClient("hh_filters.json")
-    vac_list = hh.search(vsf)
-    hh.load_descriptions(vac_list)
+    # vsf = VacancySearchFilters(
+    #     text="C++",
+    #     area=[Area("Москва", ""), Area("Санкт-Петербург", "")],
+    #     experience=["Нет опыта"],
+    #     work_format=["Удалённо"],
+    # )
+    #
+    # hh = HHVacancyClient("hh_filters.json")
+    # vac_list = hh.search(vsf)
+    # hh.load_descriptions(vac_list)
 
     print(vac_list)
