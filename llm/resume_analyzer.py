@@ -66,8 +66,8 @@ class ResumeAnalysis(BaseModel):
     )
 
 class ResumeAnalyzer:
-    def __init__(self, model : LLMClient):
-        self.llm_client = model
+    def __init__(self, llm_client : LLMClient):
+        self.llm_client = llm_client
 
     def analyze(self, resume_str : str) -> ResumeAnalysis:
         prompt=f"""
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
     # print(json.dumps(ResumeAnalysis.model_json_schema(), indent=2, ensure_ascii=False))
 
-    analyzer = ResumeAnalyzer(model=LLMClient())
+    analyzer = ResumeAnalyzer(llm_client=LLMClient())
     response = analyzer.analyze(resume_str)
 
 

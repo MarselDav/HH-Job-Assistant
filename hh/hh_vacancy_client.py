@@ -3,8 +3,8 @@ import html
 import json
 from dataclasses import asdict
 
-from hh_models import VacancySearchFilters, Area, Vacancy, ProfessionalRole, Industry
-from hh_filters import HHFilters, DICTIONARIES_PARAMS_LIST
+from hh.hh_models import VacancySearchFilters, Vacancy
+from hh.hh_filters import HHFilters, DICTIONARIES_PARAMS_LIST
 import requests
 from bs4 import BeautifulSoup
 
@@ -165,6 +165,7 @@ class HHVacancyClient:
         return text
 
 if __name__ == "__main__":
+    pass
     # vsf = VacancySearchFilters(
     #     text="C++",
     #     area=[Area("Москва", ""), Area("Санкт-Петербург", "")],
@@ -176,4 +177,4 @@ if __name__ == "__main__":
     # vac_list = hh.search(vsf)
     # hh.load_descriptions(vac_list)
 
-    print(vac_list)
+    # print(vac_list)

@@ -45,3 +45,15 @@ class Vacancy:
     work_schedule_by_days: list[str] | None = None
     working_hours: list[str] | None = None
     description: str | None = None
+
+    # поля для сортировки вакансий
+    bm25_score: float | None = None
+    embedding_score: float | None = None
+    llm_score: float | None = None
+    total_score: float = 0
+
+    """
+    Краткое подведение итогов. 
+    По каким критериям кандидат подходит, по каким нет?
+    """
+    recap: str | None = None
