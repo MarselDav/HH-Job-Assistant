@@ -19,7 +19,7 @@ class LLMClient:
 
         # настройки повторных попыток получения ответа и обязательной паузы
         self._max_retries = 5
-        self._min_delay = 2.0
+        self._min_delay = 4.0
         self._current_delay = 0.0
         self._last_request_time = 0.0
 
@@ -27,7 +27,6 @@ class LLMClient:
         response = None
         for attempt in range(self._max_retries):
             self._wait_if_needed()
-            self._last_request_time = time.time()
 
             try:
                 response = self._client.models.generate_content(
@@ -39,23 +38,38 @@ class LLMClient:
                     )
                 )
 
+                self._last_request_time = time.time()
+
                 # сбрасываем при успешности запроса
-                self._current_delay = 0
+                self._current_delay = 0.0
 
                 break
 
+
             except APIError as e:
-                if e.code == 503:
-                    if attempt == self._max_retries - 1:
-                        print("[LLMClient] Число попыток исчерпано")
+                if e.code != 503:
+                    raise
 
-                    self._current_delay = self._min_delay * (2 ** attempt)
-                    print(f"[LLMClient] Ошибка 503 (Модель перегружена). "
-                          f"Попытка {attempt + 1}/{self._max_retries}. Ждем {self._current_delay} сек...")
+                if attempt == self._max_retries - 1:
+                    print(
+                        f"[LLMClient] Ошибка 503. "
+                        f"Попытка {attempt + 1}/{self._max_retries}. "
+                        f"Попытки исчерпаны."
+                    )
+                    break
 
-        if response is None:
-            raise RuntimeError(f"[LLMClient] Не удалось получить ответ от LLM даже после "
-                               f"{self._max_retries} запросов")
+                self._current_delay = self._min_delay * (2 ** attempt)
+
+                print(
+                    f"[LLMClient] Ошибка 503. "
+                    f"Попытка {attempt + 1}/{self._max_retries}. "
+                    f"Следующая попытка через {self._current_delay:.1f} сек."
+                )
+        else:
+            raise RuntimeError(
+                f"[LLMClient] Не удалось получить ответ от LLM "
+                f"даже после {self._max_retries} запросов"
+            )
 
         print("[LLMClient] Model:", response.model_version)
         print("[LLMClient] Response ID:", response.response_id)
@@ -90,6 +104,9 @@ class LLMClient:
 
         if time_passed < required_delay:
             sleep_time = required_delay - time_passed
-            print(f"[LLMClient] Выдерживаем авто-паузу перед запросом: {sleep_time:.2f} сек.")
+            print(
+                f"[LLMClient] Ждём {sleep_time:.2f} сек. "
+                f"(required_delay={required_delay:.2f})"
+            )
 
             time.sleep(sleep_time)

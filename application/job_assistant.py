@@ -55,8 +55,10 @@ class JobAssistant:
         self.load_descriptions_from_db(vacancies_list) # подгружаем описание для существующих в бд вакансий
         self.hh_vacancy_client.load_descriptions(vacancies_list)
 
+        print("Запуск анализа резюме")
         resume_analysis = self.resume_analyzer.analyze(self.resume_str)
         self.load_matching_from_db(vacancies_list)
+        print("Запуск vacancy_retriever")
         self.vacancy_retriever.retrieve(resume_analysis, vacancies_list)
 
         return vacancies_list

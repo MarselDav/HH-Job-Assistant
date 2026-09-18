@@ -1,0 +1,7 @@
+requests
+beautifulsoup4
+google-genai
+pydantic
+python-dotenv
+psycopg[binary]
+sentence-transformers
