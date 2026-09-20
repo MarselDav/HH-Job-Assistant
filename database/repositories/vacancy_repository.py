@@ -3,11 +3,12 @@ from pathlib import Path
 from psycopg.rows import dict_row
 from typing import LiteralString, cast
 from hh.hh_models import Vacancy
+from database.connection import DatabaseConnection
 
 
 class VacancyRepository:
-    def __init__(self, connection: psycopg.Connection):
-        self.connection = connection
+    def __init__(self, database : DatabaseConnection):
+        self.database = database
 
         queries_path = Path(__file__).parent.parent / "queries" / "vacancies"
 
@@ -22,37 +23,37 @@ class VacancyRepository:
         )
 
     def create(self, vacancy: Vacancy) -> int:
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                self.create_query,
-                (
-                    vacancy.id,
-                    vacancy.name,
-                    vacancy.work_schedule,
-                    vacancy.response_letter_required,
-                    vacancy.company_id,
-                    vacancy.company_name,
-                    vacancy.area,
-                    vacancy.experience,
-                    vacancy.salary,
-                    vacancy.work_formats,
-                    vacancy.work_schedule_by_days,
-                    vacancy.working_hours,
-                    vacancy.description,
-                ),
-            )
-            vacancy_id = cursor.fetchone()[0]
-
-        return vacancy_id
+        with self.database.get_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    self.create_query,
+                    (
+                        vacancy.id,
+                        vacancy.name,
+                        vacancy.work_schedule,
+                        vacancy.response_letter_required,
+                        vacancy.company_id,
+                        vacancy.company_name,
+                        vacancy.area,
+                        vacancy.experience,
+                        vacancy.salary,
+                        vacancy.work_formats,
+                        vacancy.work_schedule_by_days,
+                        vacancy.working_hours,
+                        vacancy.description,
+                    ),
+                )
+                vacancy_id = cursor.fetchone()[0]
+                return vacancy_id
 
     def get_description_by_id(self, hh_id: int) -> str:
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                self.get_description_query,
-                (
-                    hh_id,
-                ),
-            )
-            description = cursor.fetchone()
-
-        return description[0] if description is not None else None
+        with self.database.get_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    self.get_description_query,
+                    (
+                        hh_id,
+                    ),
+                )
+                description = cursor.fetchone()
+                return description[0] if description is not None else None

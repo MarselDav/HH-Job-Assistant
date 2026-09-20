@@ -45,7 +45,6 @@ class LLMClient:
 
                 break
 
-
             except APIError as e:
                 if e.code != 503:
                     raise
@@ -65,11 +64,8 @@ class LLMClient:
                     f"Попытка {attempt + 1}/{self._max_retries}. "
                     f"Следующая попытка через {self._current_delay:.1f} сек."
                 )
-        else:
-            raise RuntimeError(
-                f"[LLMClient] Не удалось получить ответ от LLM "
-                f"даже после {self._max_retries} запросов"
-            )
+
+            self._last_request_time = time.time()
 
         print("[LLMClient] Model:", response.model_version)
         print("[LLMClient] Response ID:", response.response_id)

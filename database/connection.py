@@ -1,23 +1,35 @@
+from contextlib import contextmanager
+
 import psycopg
+from psycopg_pool import ConnectionPool
 import os
 from dotenv import load_dotenv
 
 class DatabaseConnection:
     def __init__(self):
         load_dotenv()
-        self.connection = psycopg.connect(
-            host=os.environ['POSTGRES_HOST'],
-            port=os.environ['POSTGRES_PORT'],
-            dbname=os.environ['POSTGRES_DB'],
-            user=os.environ['POSTGRES_USER'],
-            password=os.environ['POSTGRES_PASSWORD']
+
+        self.pool = ConnectionPool(
+            conninfo=(
+                f"host={os.environ['POSTGRES_HOST']} "
+                f"port={os.environ['POSTGRES_PORT']} "
+                f"dbname={os.environ['POSTGRES_DB']} "
+                f"user={os.environ['POSTGRES_USER']} "
+                f"password={os.environ['POSTGRES_PASSWORD']}"
+            ),
+            min_size=1,
+            max_size=10,
         )
 
+    @contextmanager
     def get_connection(self):
-        return self.connection
+        with self.pool.connection() as connection:
+            try:
+                yield connection
+                connection.commit()
+            except Exception:
+                connection.rollback()
+                raise
 
-    def get_cursor(self):
-        return self.connection.cursor()
-
-    def close_connection(self):
-        self.connection.close()
+    def close(self):
+        self.pool.close()

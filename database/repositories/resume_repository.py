@@ -2,16 +2,14 @@ import psycopg
 from pathlib import Path
 from psycopg.rows import dict_row
 from typing import LiteralString, cast
-from hh.hh_models import Vacancy
-from matching.vacancy_retriever import MatchingAnalysis
 from database.connection import DatabaseConnection
 
 
-class MatchingResultsRepository:
-    def __init__(self, database : DatabaseConnection):
+class ResumeRepository:
+    def __init__(self, database: DatabaseConnection):
         self.database = database
 
-        queries_path = Path(__file__).parent.parent / "queries" / "matching_results"
+        queries_path = Path(__file__).parent.parent / "queries" / "resume"
 
         self.create_query = cast(
             LiteralString,
@@ -23,32 +21,26 @@ class MatchingResultsRepository:
             (queries_path / "get.sql").read_text(encoding="utf-8")
         )
 
-    def create(self, vacancy: Vacancy, matching_analysis : MatchingAnalysis) -> int:
+    def create(self, name: str, raw_text: str) -> int:
         with self.database.get_connection() as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
                     self.create_query,
                     (
-                        vacancy.id,
-                        vacancy.bm25_score,
-                        vacancy.embedding_score,
-                        vacancy.llm_score,
-                        vacancy.total_score,
-                        matching_analysis.matched_skills,
-                        matching_analysis.recap,
+                        name,
+                        raw_text
                     ),
                 )
-                result_id = cursor.fetchone()[0]
-                return result_id
+                return cursor.fetchone()[0]
 
-    def get_by_ids(self, vacancy_id: int) -> dict:
+    def get_by_id(self, resume_id: int) -> dict:
         with self.database.get_connection() as connection:
             with connection.cursor(row_factory=dict_row) as cursor:
                 cursor.execute(
                     self.get_query,
                     (
-                        vacancy_id,
+                        resume_id,
                     ),
                 )
-                matching_result = cursor.fetchone()
-                return matching_result[0] if matching_result is not None else None
+
+                return cursor.fetchone()

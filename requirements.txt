@@ -5,3 +5,8 @@ pydantic
 python-dotenv
 psycopg[binary]
 sentence-transformers
+fastapi
+uvicorn
+python-multipart
+psycopg_pool
+google
