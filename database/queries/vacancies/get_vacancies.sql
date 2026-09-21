@@ -1,5 +1,6 @@
 SELECT
-    hh_id,
+    id AS db_id,
+    hh_id AS id,
     name,
     work_schedule,
     response_letter_required,
@@ -13,4 +14,4 @@ SELECT
     working_hours,
     description
 FROM vacancies
-WHERE hh_id = %s;
+WHERE id = ANY(%s);

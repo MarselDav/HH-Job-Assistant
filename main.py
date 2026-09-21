@@ -89,3 +89,31 @@ database/
     ├── vacancy_repository.py
     └── matching_repository.py
 """
+
+"""
+
+text="C++",
+        area=[Area("Москва", ""), Area("Санкт-Петербург", "")],
+        experience=["Нет опыта"],
+        work_format=["Удалённо"],
+
+{
+  "text": "C++",
+  "area": [
+    {
+      "category": "Москва",
+      "area": ""
+    },
+    {
+      "category": "Санкт-Петербург",
+      "area": ""
+    }
+  ],
+  "experience": [
+    "Нет опыта"
+  ],
+  "work_format": [
+    "Удалённо"
+  ]
+}
+"""

@@ -96,8 +96,8 @@ class VacancyRetriever:
 
         return normalized_scores
 
-    def llm_matching(self, resume : ResumeAnalysis, vacancy_list : list[Vacancy]):
-        for i, vacancy in enumerate(vacancy_list):
+    def llm_matching(self, resume : ResumeAnalysis, vacancies_list : list[Vacancy]):
+        for i, vacancy in enumerate(vacancies_list):
             if vacancy.recap is not None:
                 continue
 
@@ -119,31 +119,28 @@ class VacancyRetriever:
             print(f"Оценка соответствия от LLM для вакансии: {vacancy.name}")
             print(matching_response)
 
-            vacancy_list[i].llm_score = matching_response.score
-            vacancy_list[i].total_score += self.llm_matching_coef * matching_response.score
-            vacancy_list[i].recap = matching_response.recap
+            vacancies_list[i].llm_score = matching_response.score
+            vacancies_list[i].total_score += self.llm_matching_coef * matching_response.score
+            vacancies_list[i].recap = matching_response.recap
 
-    def retrieve(self, resume_analysis : ResumeAnalysis, vacancy_list : list[Vacancy]):
-        # обнуление всех scores
-        for vacancy in vacancy_list:
-            vacancy.bm25_score = 0.0
-            vacancy.embedding_score = 0.0
-            vacancy.llm_score = 0.0
-            vacancy.total_score = 0.0
 
+    def semantic_matching(self, resume_analysis : ResumeAnalysis, vacancies_list : list[Vacancy]):
         skill_weights = {skill_item.skill: float(skill_item.level) for skill_item in
                          resume_analysis.skills_sorted_by_level}
 
-        self.custom_bm25_scores(vacancy_list, skill_weights)
-        self.embedding_scores(resume_analysis, vacancy_list)
+        self.custom_bm25_scores(vacancies_list, skill_weights)
+        self.embedding_scores(resume_analysis, vacancies_list)
 
-        vacancy_list.sort(key=lambda v: v.total_score, reverse=True)
+        vacancies_list.sort(key=lambda v: v.total_score, reverse=True)
 
-        self.llm_matching(resume_analysis, vacancy_list[
+    def retrieve(self, resume_analysis : ResumeAnalysis, vacancies_list : list[Vacancy]):
+        self.semantic_matching(resume_analysis, vacancies_list)
+
+        self.llm_matching(resume_analysis, vacancies_list[
             :self.vacancy_cnt_for_llm_matching]
         )
 
-        vacancy_list.sort(key=lambda v: v.total_score, reverse=True)
+        vacancies_list.sort(key=lambda v: v.total_score, reverse=True)
 
     @staticmethod
     def _normalize_scores(scores : list[float]) -> list[float]:
@@ -212,10 +209,10 @@ class VacancyRetriever:
         return skill_weights_lower
 
     @staticmethod
-    def _vacancy_texts_prepare(vacancy_texts : list[str]) -> list[list[str]]:
+    def _vacancy_texts_prepare(vacancies_texts : list[str]) -> list[list[str]]:
         tokenized_vacancy_texts = []
 
-        for vacancy_text in vacancy_texts:
+        for vacancy_text in vacancies_texts:
             text = vacancy_text.lower()
 
             pattern = r'[a-zа-я0-9\._]+(?:[\+#]+)?'

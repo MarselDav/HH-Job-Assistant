@@ -3,6 +3,8 @@ from pathlib import Path
 from psycopg.rows import dict_row
 from typing import LiteralString, cast
 from database.connection import DatabaseConnection
+from llm.resume_analyzer import ResumeAnalysis
+from psycopg.types.json import Jsonb
 
 
 class ResumeRepository:
@@ -19,6 +21,11 @@ class ResumeRepository:
         self.get_query = cast(
             LiteralString,
             (queries_path / "get.sql").read_text(encoding="utf-8")
+        )
+
+        self.update_query = cast(
+            LiteralString,
+            (queries_path / "update.sql").read_text(encoding="utf-8")
         )
 
     def create(self, name: str, raw_text: str) -> int:
@@ -44,3 +51,17 @@ class ResumeRepository:
                 )
 
                 return cursor.fetchone()
+
+    def update_analysis(self, resume_id: int, analysis: ResumeAnalysis):
+        with self.database.get_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    self.update_query,
+                    (
+                        Jsonb(analysis.model_dump()),
+                        resume_id,
+                    ),
+                )
+                result = cursor.fetchone()
+
+                return result[0] if result else None

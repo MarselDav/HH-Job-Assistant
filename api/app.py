@@ -16,11 +16,13 @@ from database.repositories.vacancy_repository import VacancyRepository
 from database.repositories.matching_results_repository import MatchingResultsRepository
 
 from api.router.resume import router as resume_router
+from api.router.vacancy import router as vacancy_router
+from api.router.matching import router as matching_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.hh_vacancy_client = HHVacancyClient("hh/hh_filters.json")
-    app.state.llm_client = LLMClient("gemini-3.7-flash")
+    app.state.llm_client = LLMClient("gemini-3.5-flash")
     app.state.resume_analyzer = ResumeAnalyzer(app.state.llm_client)
 
     app.state.embedding_model = SentenceTransformer(
@@ -45,10 +47,11 @@ async def lifespan(app: FastAPI):
     finally:
         app.state.database.close()
 
-
 app = FastAPI(
     title="HH-Job-Assistant",
     lifespan=lifespan
 )
 
-app.include_router(resume_router)
+app.include_router(resume_router, tags=["resume"])
+app.include_router(vacancy_router, tags=["vacancy"])
+app.include_router(matching_router, tags=["matching"])

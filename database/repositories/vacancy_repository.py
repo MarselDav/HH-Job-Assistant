@@ -22,6 +22,16 @@ class VacancyRepository:
             (queries_path / "get_description.sql").read_text(encoding="utf-8")
         )
 
+        self.update_description_query = cast(
+            LiteralString,
+            (queries_path / "update_description.sql").read_text(encoding="utf-8")
+        )
+
+        self.get_vacancies_query = cast(
+            LiteralString,
+            (queries_path / "get_vacancies.sql").read_text(encoding="utf-8")
+        )
+
     def create(self, vacancy: Vacancy) -> int:
         with self.database.get_connection() as connection:
             with connection.cursor() as cursor:
@@ -46,14 +56,44 @@ class VacancyRepository:
                 vacancy_id = cursor.fetchone()[0]
                 return vacancy_id
 
-    def get_description_by_id(self, hh_id: int) -> str:
+    def get_description_by_id(self, db_id: int) -> tuple[int | None, str | None]:
         with self.database.get_connection() as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
                     self.get_description_query,
                     (
-                        hh_id,
+                        db_id,
                     ),
                 )
                 description = cursor.fetchone()
-                return description[0] if description is not None else None
+
+                if description is None:
+                    return None, None
+
+                return description[0], description[1]
+
+    def upgrade_description(self, id : int, description : str) -> int:
+        with self.database.get_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    self.update_description_query,
+                    (
+                        description,
+                        id,
+                    ),
+                )
+                id = cursor.fetchone()
+                return id[0] if id is not None else None
+
+
+    def get_vacancies_by_ids(self, db_ids: list[int]) -> list[Vacancy]:
+        with self.database.get_connection() as connection:
+            with connection.cursor(row_factory=dict_row) as cursor:
+                cursor.execute(
+                    self.get_vacancies_query,
+                    (
+                        db_ids,
+                    )
+                )
+                vacancies_dicts = cursor.fetchall()
+                return [Vacancy(**row) for row in vacancies_dicts]

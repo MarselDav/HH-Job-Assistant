@@ -1,4 +1,5 @@
 INSERT INTO matching_results (
+    resume_id,
     vacancy_id,
     bm25_score,
     embedding_score,

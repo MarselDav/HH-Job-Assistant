@@ -51,11 +51,7 @@ class HHVacancyClient:
 
 
     def _build_search_params(self, filters : VacancySearchFilters) -> dict:
-        vacancy_search_filters = {
-            key: value
-            for key, value in asdict(filters).items()
-            if value is not None
-        }
+        vacancy_search_filters = filters.model_dump()
 
         if vacancy_search_filters.get("area") is not None:
             for area_idx in range(len(vacancy_search_filters["area"])):

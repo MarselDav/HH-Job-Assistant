@@ -1,3 +1,3 @@
-SELECT description
+SELECT hh_id, description
 FROM vacancies
-WHERE hh_id = %s;
+WHERE id = %s;

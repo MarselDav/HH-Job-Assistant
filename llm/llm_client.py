@@ -12,7 +12,7 @@ from typing import TypeVar
 T = TypeVar("T", bound=BaseModel)
 
 class LLMClient:
-    def __init__(self, model : str = "gemini-3.6-flash") -> None:
+    def __init__(self, model : str = "gemini-3.7-flash") -> None:
         load_dotenv()
         self._client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
         self._model = model

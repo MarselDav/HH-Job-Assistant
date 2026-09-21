@@ -1,22 +1,20 @@
 from dataclasses import dataclass
+from pydantic import BaseModel
 
-@dataclass(frozen=True)
-class Area:
+class Area(BaseModel):
     category : str
     area : str
 
-@dataclass(frozen=True)
-class ProfessionalRole:
+class ProfessionalRole(BaseModel):
     category : str
     role : str
 
-@dataclass(frozen=True)
-class Industry:
+class Industry(BaseModel):
     category : str
     industry : str
 
-@dataclass(kw_only=True)
-class VacancySearchFilters:
+
+class VacancySearchFilters(BaseModel):
     text: str | None = None
     area: list[Area] | None = None
     experience: list[str] | None = None
@@ -30,8 +28,8 @@ class VacancySearchFilters:
     currency: str | None = None
 
 
-@dataclass
-class Vacancy:
+class Vacancy(BaseModel):
+    db_id : int | None = None
     id: int | None = None
     name: str | None = None
     work_schedule: str | None = None
@@ -47,9 +45,9 @@ class Vacancy:
     description: str | None = None
 
     # поля для сортировки вакансий
-    bm25_score: float | None = None
-    embedding_score: float | None = None
-    llm_score: float | None = None
+    bm25_score: float = 0
+    embedding_score: float = 0
+    llm_score: float = 0
     total_score: float = 0
 
     """
