@@ -3,6 +3,7 @@ from fastapi import Request
 from database.repositories.resume_repository import ResumeRepository
 from database.repositories.vacancy_repository import VacancyRepository
 from hh.hh_vacancy_client import HHVacancyClient
+from llm.cover_letter_generator import CoverLetterGenerator
 from llm.resume_analyzer import ResumeAnalyzer
 from matching.vacancy_retriever import VacancyRetriever
 
@@ -21,3 +22,6 @@ def get_vacancy_repository(request : Request) -> VacancyRepository:
 
 def get_vacancy_retriever(request : Request) -> VacancyRetriever:
     return request.app.state.vacancy_retriever
+
+def get_cover_letter_generator(request : Request) -> CoverLetterGenerator:
+    return request.app.state.cover_letter_generator

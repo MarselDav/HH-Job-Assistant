@@ -12,7 +12,7 @@ from typing import TypeVar
 T = TypeVar("T", bound=BaseModel)
 
 class LLMClient:
-    def __init__(self, model : str = "gemini-3.7-flash") -> None:
+    def __init__(self, model : str = "gemini-3.1-flash") -> None:
         load_dotenv()
         self._client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
         self._model = model
@@ -50,12 +50,11 @@ class LLMClient:
                     raise
 
                 if attempt == self._max_retries - 1:
-                    print(
+                    raise ValueError(
                         f"[LLMClient] Ошибка 503. "
                         f"Попытка {attempt + 1}/{self._max_retries}. "
                         f"Попытки исчерпаны."
                     )
-                    break
 
                 self._current_delay = self._min_delay * (2 ** attempt)
 

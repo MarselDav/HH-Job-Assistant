@@ -29,9 +29,3 @@ async def get_vacancy_description(vac_id: int,
                       vacancy_repository : VacancyRepositoryDep,
                       hh_vacancy_client : HHVacancyClientDep):
     return await vacancy_service.get_vacancy_description(vac_id, vacancy_repository, hh_vacancy_client)
-
-"""
-Запрос вакансий -> вакансии с id
-запрос описания по id -> описание
-запрос сортировки по соответствию по id вакансий
-"""
