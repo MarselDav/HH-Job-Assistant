@@ -12,6 +12,7 @@ class SkillItem(BaseModel):
     skill: str = Field(description="Название навыка")
     level: str = Field(description="Уровень владения, значение в отрезке [0.0, 1.0]")
 
+
 class ResumeAnalysis(BaseModel):
     skills_sorted_by_level: list[SkillItem] = Field(
         description="Список навыков с уровнями владения ими "
@@ -64,6 +65,7 @@ class ResumeAnalysis(BaseModel):
     brief_description : str = Field(
         description="Краткое описание профиля кандидата на основе резюме."
     )
+
 
 class ResumeAnalyzer:
     def __init__(self, llm_client : LLMClient):

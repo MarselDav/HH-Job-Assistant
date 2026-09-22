@@ -14,7 +14,7 @@ router = APIRouter()
 ResumeRepositoryDep = Annotated[ResumeRepository, Depends(get_resume_repository)]
 ResumeAnalyzerDep = Annotated[ResumeAnalyzer, Depends(get_resume_analyzer)]
 
-@router.post("/upload_resume/")
+@router.post("/upload_resume/", status_code=status.HTTP_201_CREATED)
 async def upload_resume(file : UploadFile,
                         name : str,
                         resume_repository : ResumeRepositoryDep):
@@ -33,7 +33,7 @@ async def upload_resume(file : UploadFile,
             detail=str(e)
         )
 
-@router.get("/analyze_resume/{resume_id}")
+@router.get("/analyze_resume/{resume_id}", status_code=status.HTTP_201_CREATED)
 async def analyze_resume(resume_id : int,
                          resume_repository : ResumeRepositoryDep,
                          resume_analyzer : ResumeAnalyzerDep):

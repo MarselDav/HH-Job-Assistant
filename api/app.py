@@ -45,7 +45,7 @@ async def lifespan(app: FastAPI):
     try:
         yield
     finally:
-        app.state.database.close()
+        app.state.db_connection.close()
 
 app = FastAPI(
     title="HH-Job-Assistant",
