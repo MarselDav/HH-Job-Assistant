@@ -4,7 +4,6 @@ INSERT INTO vacancies (
     work_schedule,
     response_letter_required,
     company_id,
-    company_name,
     area,
     experience,
     salary,
@@ -14,7 +13,7 @@ INSERT INTO vacancies (
     description
 )
 VALUES (
-    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
 )
 ON CONFLICT (hh_id) DO UPDATE
 SET hh_id = EXCLUDED.hh_id -- EXCLUDED - виртуальная таблица, в которой данные которые не получилось вставить

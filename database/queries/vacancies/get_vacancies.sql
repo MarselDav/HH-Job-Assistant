@@ -5,7 +5,6 @@ SELECT
     work_schedule,
     response_letter_required,
     company_id,
-    company_name,
     area,
     experience,
     salary,

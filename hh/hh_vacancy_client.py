@@ -3,13 +3,14 @@ import html
 import json
 from dataclasses import asdict
 
-from hh.hh_models import VacancySearchFilters, Vacancy
+from hh.hh_models import VacancySearchFilters, Vacancy, Company
 from hh.hh_filters import HHFilters, DICTIONARIES_PARAMS_LIST
 import requests
 from bs4 import BeautifulSoup
 
 VACANCY_URL = "https://hh.ru/search/vacancy"
 VACANCY_DETAILS_URL = "https://hh.ru/vacancy/{}"
+ORIGINAL_LOGO_TYPE = 'ORIGINAL'
 
 class HHVacancyClient:
     def __init__(self, hh_filters: HHFilters) -> None:
@@ -49,34 +50,26 @@ class HHVacancyClient:
 
         return self._parse_vacancy_response(response.text)
 
-
     def _build_search_params(self, filters : VacancySearchFilters) -> dict:
         vacancy_search_filters = filters.model_dump()
 
         if vacancy_search_filters.get("area") is not None:
-            for area_idx in range(len(vacancy_search_filters["area"])):
-                area = vacancy_search_filters["area"][area_idx]
-                if len(area["area"]) == 0:
-                    vacancy_search_filters["area"][area_idx] = self.hh_filters.get_areas_category_id(area["category"])
-                else:
-                    vacancy_search_filters["area"][area_idx] = self.hh_filters.get_areas_id(
-                        area["category"],
-                        area["area"]
-                    )
+            areas_list = vacancy_search_filters.get("area")
+            for area_idx in range(len(areas_list)):
+                vacancy_search_filters["area"][area_idx] = self.hh_filters.get_area_id(
+                    areas_list[area_idx])
 
         if vacancy_search_filters.get("professional_role") is not None:
-            for prof_role_idx in range(len(vacancy_search_filters["professional_role"])):
-                professional_role = vacancy_search_filters["professional_role"][prof_role_idx]
-                vacancy_search_filters["professional_role"][prof_role_idx] = self.hh_filters.get_professional_roles_id(
-                        professional_role["category"],
-                        professional_role["role"]
-                    )
+            roles_list = vacancy_search_filters.get("professional_role")
+            for role_idx in range(len(roles_list)):
+                vacancy_search_filters["professional_role"][role_idx] = self.hh_filters.get_profession_role_id(
+                    roles_list[role_idx])
 
-        if vacancy_search_filters.get("industries") is not None:
-            for industries_idx in range(len(vacancy_search_filters["industries"])):
-                industries = vacancy_search_filters["industries"][industries_idx]
-                vacancy_search_filters["industries"][industries_idx] = self.hh_filters.get_industries_id(
-                    industries["category"], industries["industry"])
+        if vacancy_search_filters.get("industry") is not None:
+            industries_list = vacancy_search_filters.get("industry")
+            for industry_idx in range(len(industries_list)):
+                vacancy_search_filters["industry"][industry_idx] = self.hh_filters.get_industry_id(
+                    industries_list[industry_idx])
 
         for param in DICTIONARIES_PARAMS_LIST:
             if vacancy_search_filters.get(param) is not None:
@@ -97,6 +90,33 @@ class HHVacancyClient:
 
         return items[0].get(element_key, [])
 
+    def _parse_logo_info(self, company_info: dict, _type : str) -> str | None:
+        logo_types_list = company_info.get("logos", {}).get('logo')
+
+        if logo_types_list is None:
+            return None
+
+        logo = None
+        for logo_type in logo_types_list:
+            if logo_type.get("@type") == _type:
+                logo = logo_type.get("@url")
+                break
+
+        if logo is None and _type != ORIGINAL_LOGO_TYPE:
+            return self._parse_logo_info(company_info, ORIGINAL_LOGO_TYPE)
+
+        return logo
+
+    @staticmethod
+    def _parse_company_name(company_info: dict) -> str | None:
+        if company_info.get("name") is not None:
+            return company_info.get("name")
+
+        if company_info.get("visibleName") is not None:
+            return company_info.get("visibleName")
+
+        return None
+
     def _parse_search_response(self, page : str) -> list[Vacancy]:
         pattern = re.compile(
             r'<template[^>]*id="HH-Lux-InitialState"[^>]*>(.*?)</template>',
@@ -105,7 +125,8 @@ class HHVacancyClient:
         match = pattern.search(page)
 
         if not match:
-            raise RuntimeError("HH-Lux-InitialState not found")
+            raise RuntimeError("[HHVacancyClient][_parse_search_response] "
+                               "HH-Lux-InitialState not found")
 
         raw_json = match.group(1)
         decoded_json = html.unescape(raw_json)
@@ -113,18 +134,28 @@ class HHVacancyClient:
 
         vacancies_list : list[Vacancy] = list()
 
-        print("JSON successfully parsed!")
         vacancies = data["vacancySearchResult"]["vacancies"]
-        print("Vacancies:", len(vacancies))
+        print("[HHVacancyClient][_parse_search_response] "
+              "JSON parsed! Vacancies count:", len(vacancies))
+
+        # from pprint import pprint
+        # pprint(vacancies[0])
 
         for vacancy in vacancies:
+            company_info = vacancy.get("company", {})
+            company = Company(
+                id=company_info.get("id"),
+                name=self._parse_company_name(company_info),
+                logo=self._parse_logo_info(company_info, "small"),
+                site_url=company_info.get("companySiteUrl"),
+            )
+
             vacancies_list.append(Vacancy(
                 id=vacancy.get("vacancyId"),
                 name=vacancy.get("name"),
                 work_schedule=vacancy.get("@workSchedule"),
                 response_letter_required=vacancy.get("@responseLetterRequired"),
-                company_id=vacancy.get("company", {}).get("id"),
-                company_name=vacancy.get("company", {}).get("name"),
+                company=company,
                 area=vacancy.get("area", {}).get("name"),
                 experience=vacancy.get("workExperience"),
                 salary=vacancy.get("salary"),
@@ -143,7 +174,6 @@ class HHVacancyClient:
                     "workingHours",
                     "workingHoursElement",
                 ),
-                description = None
             ))
 
         return vacancies_list
@@ -160,22 +190,6 @@ class HHVacancyClient:
         text = content_div.get_text(separator="\n", strip=True)  # strip - убрать лишние пробелы по краям
         return text
 
-
-# class Vacancy(BaseModel):
-#     db_id : int | None = None
-#     id: int | None = None
-#     name: str | None = None
-#     work_schedule: str | None = None
-#     response_letter_required: bool | None = None
-#     company_id: int | None = None
-#     company_name: str | None = None
-#     area: str | None = None
-#     experience: str | None = None
-#     salary: str | None = None
-#     work_formats: list[str] | None = None
-#     work_schedule_by_days: list[str] | None = None
-#     working_hours: list[str] | None = None
-#     description: str | None = None
 
 
 class HHVacancyFormatter:
@@ -206,14 +220,12 @@ class HHVacancyFormatter:
 if __name__ == "__main__":
     pass
     # vsf = VacancySearchFilters(
-    #     text="C++",
-    #     area=[Area("Москва", ""), Area("Санкт-Петербург", "")],
-    #     experience=["Нет опыта"],
-    #     work_format=["Удалённо"],
+    #     text="C++ developer",
     # )
     #
-    # hh = HHVacancyClient("hh_filters.json")
+    # hh_filters = HHFilters("hh_filters.json")
+    # hh = HHVacancyClient(hh_filters)
     # vac_list = hh.search(vsf)
     # hh.load_descriptions(vac_list)
 
-    # print(vac_list)
+    # print(vac_list[0])

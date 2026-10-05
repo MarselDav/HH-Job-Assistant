@@ -5,6 +5,8 @@ from database.repositories.resume_repository import ResumeRepository
 from api.dependencies import get_resume_repository, get_resume_analyzer
 
 from api.app import app
+from hh.hh_filters import HHFilters
+from hh.hh_vacancy_client import HHVacancyClient
 from llm.resume_analyzer import ResumeAnalyzer
 
 
@@ -25,3 +27,10 @@ def test_resume_client(mock_resume_repository, mock_resume_analyzer):
         yield client
 
     app.dependency_overrides.clear()
+
+@pytest.fixture
+def test_hh_vacancy_client():
+    hh_filters = HHFilters("./hh/hh_filters.json")
+    hh_vacancy_client = HHVacancyClient(hh_filters)
+
+    return hh_vacancy_client

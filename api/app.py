@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from database.connection import DatabaseConnection
+from database.repositories.company_repository import CompanyRepository
 from hh.hh_vacancy_client import HHVacancyClient, HHVacancyFormatter
 from hh.hh_filters import HHFilters
 from llm.resume_analyzer import ResumeAnalyzer
@@ -44,6 +45,7 @@ async def lifespan(app: FastAPI):
     app.state.db_connection = DatabaseConnection()
     app.state.resume_repository = ResumeRepository(app.state.db_connection)
     app.state.vacancy_repository = VacancyRepository(app.state.db_connection)
+    app.state.company_repository = CompanyRepository(app.state.db_connection)
     app.state.matching_results_repository = MatchingResultsRepository(app.state.db_connection)
 
     try:

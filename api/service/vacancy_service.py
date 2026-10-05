@@ -1,21 +1,25 @@
+from database.repositories.company_repository import CompanyRepository
 from database.repositories.vacancy_repository import VacancyRepository
 from hh.hh_filters import HHFilters
 from hh.hh_models import VacancySearchFilters, Vacancy
 from hh.hh_vacancy_client import HHVacancyClient, HHVacancyFormatter
 
 
-async def get_vacancies(filters: VacancySearchFilters,
-                      vacancy_repository : VacancyRepository,
-                      hh_vacancy_client : HHVacancyClient,
-                    hh_vacancy_formatter : HHVacancyFormatter) -> list[Vacancy]:
+async def get_vacancies(
+            filters: VacancySearchFilters,
+            vacancy_repository : VacancyRepository,
+            company_repository : CompanyRepository,
+            hh_vacancy_client : HHVacancyClient,
+            hh_vacancy_formatter : HHVacancyFormatter) -> list[Vacancy]:
 
     vacancies_list = hh_vacancy_client.search(filters)
 
     for i, vacancy in enumerate(vacancies_list):
-        db_id = vacancy_repository.create(vacancy)
-        vacancies_list[i].db_id = db_id
+        company_db_id = company_repository.create(vacancy.company)
+        vacancies_list[i].company.db_id = company_db_id
 
-    print(vacancies_list)
+        vacancy_db_id = vacancy_repository.create(vacancy)
+        vacancies_list[i].db_id = vacancy_db_id
 
     hh_vacancy_formatter.make_humanreadable_vacancies(vacancies_list)
 

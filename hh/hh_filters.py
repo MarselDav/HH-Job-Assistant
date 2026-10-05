@@ -163,6 +163,17 @@ class HHFilters:
     def get_profession_roles(self) -> dict:
         return self.filters["professional_roles"]
 
+    def get_profession_role_id(self, role: str) -> dict | None:
+        for parent, parent_dict in self.filters["professional_roles"].items():
+            if parent == role:
+                return parent_dict["id"]
+
+            for child, child_dict in parent_dict["roles"].items():
+                if child == role:
+                    return child_dict["id"]
+
+        return None
+
     def get_professional_roles_categories(self) -> list:
         return list(self.filters["professional_roles"])
 
@@ -194,6 +205,17 @@ class HHFilters:
     def get_areas(self) -> dict:
         return self.filters["areas"]
 
+    def get_area_id(self, area : str) -> dict | None:
+        for parent, parent_dict in self.filters["areas"].items():
+            if parent == area:
+                return parent_dict["id"]
+
+            for child, child_dict in parent_dict["areas"].items():
+                if child == area:
+                    return child_dict["id"]
+
+        return None
+
     def get_areas_categories(self) -> list:
         return list(self.filters["areas"])
 
@@ -224,6 +246,17 @@ class HHFilters:
 
     def get_industries(self) -> dict:
         return self.filters["industries"]
+
+    def get_industry_id(self, industry: str) -> dict | None:
+        for parent, parent_dict in self.filters["industries"].items():
+            if parent == industry:
+                return parent_dict["id"]
+
+            for child, child_dict in parent_dict["industries"].items():
+                if child == industry:
+                    return child_dict["id"]
+
+        return None
 
     def get_industries_categories(self) -> list:
         return list(self.filters["industries"])
@@ -282,11 +315,11 @@ class HHFilters:
 
 
 if __name__ == "__main__":
-    parser = HHFilterParser()
-    filters_ = parser.parse_all()
-    parser.save_filters(filters_, "hh_filters.json")
+    # parser = HHFilterParser()
+    # filters_ = parser.parse_all()
+    # parser.save_filters(filters_, "hh_filters.json")
 
-    # filter = HHFilters("hh_filters.json")
-    # print(filter.get_simplify_filters()["industries"])
-    #
+    filter = HHFilters("hh_filters.json")
+    print(filter.get_area_id("Уфа"))
+
     # filter.get_top_keys()

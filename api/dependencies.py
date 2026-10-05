@@ -1,5 +1,6 @@
 from fastapi import Request
 
+from database.repositories.company_repository import CompanyRepository
 from database.repositories.resume_repository import ResumeRepository
 from database.repositories.vacancy_repository import VacancyRepository
 from hh.hh_filters import HHFilters
@@ -32,3 +33,6 @@ def get_cover_letter_generator(request : Request) -> CoverLetterGenerator:
 
 def get_hh_vacancy_formatter(request : Request) -> HHVacancyFormatter:
     return request.app.state.hh_vacancy_formatter
+
+def get_company_repository(request : Request) -> CompanyRepository:
+    return request.app.state.company_repository

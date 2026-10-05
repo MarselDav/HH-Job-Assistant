@@ -4,32 +4,26 @@ import psycopg
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel
 
-class Area(BaseModel):
-    category : str
-    area : str
-
-class ProfessionalRole(BaseModel):
-    category : str
-    role : str
-
-class Industry(BaseModel):
-    category : str
-    industry : str
-
 
 class VacancySearchFilters(BaseModel):
     text: str | None = None
-    area: list[Area] | None = None
+    area: list[str] | None = None
     experience: list[str] | None = None
-    professional_role: list[ProfessionalRole] | None = None
-    industries: list[Industry] | None = None
+    professional_role: list[str] | None = None
+    industry: list[str] | None = None
     employment_form: list[str] | None = None
     work_format: list[str] | None = None
     working_hours: list[str] | None = None
     work_schedule_by_days: list[str] | None = None
     salary: dict | None = None
-    currency: str | None = None
 
+class Company(BaseModel):
+    db_id : int | None = None
+    id: int | None = None
+    name: str | None = None
+    description : str | None = None
+    logo: str | None = None
+    site_url: str | None = None
 
 class Vacancy(BaseModel):
     db_id : int | None = None
@@ -37,8 +31,7 @@ class Vacancy(BaseModel):
     name: str | None = None
     work_schedule: str | None = None
     response_letter_required: bool | None = None
-    company_id: int | None = None
-    company_name: str | None = None
+    company : Company | None = None
     area: str | None = None
     experience: str | None = None
     salary: str | None = None
@@ -58,7 +51,6 @@ class Vacancy(BaseModel):
     По каким критериям кандидат подходит, по каким нет?
     """
     recap: str | None = None
-
 
 # class Resume(BaseModel):
 #     db_id: int
