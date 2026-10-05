@@ -12,8 +12,8 @@ VACANCY_URL = "https://hh.ru/search/vacancy"
 VACANCY_DETAILS_URL = "https://hh.ru/vacancy/{}"
 
 class HHVacancyClient:
-    def __init__(self, filters_json_path: str) -> None:
-        self.hh_filters = HHFilters(filters_json_path)
+    def __init__(self, hh_filters: HHFilters) -> None:
+        self.hh_filters = hh_filters
 
         self.headers = {"User-Agent": "Mozilla/5.0"}
         self.timeout = 30
@@ -159,6 +159,49 @@ class HHVacancyClient:
 
         text = content_div.get_text(separator="\n", strip=True)  # strip - убрать лишние пробелы по краям
         return text
+
+
+# class Vacancy(BaseModel):
+#     db_id : int | None = None
+#     id: int | None = None
+#     name: str | None = None
+#     work_schedule: str | None = None
+#     response_letter_required: bool | None = None
+#     company_id: int | None = None
+#     company_name: str | None = None
+#     area: str | None = None
+#     experience: str | None = None
+#     salary: str | None = None
+#     work_formats: list[str] | None = None
+#     work_schedule_by_days: list[str] | None = None
+#     working_hours: list[str] | None = None
+#     description: str | None = None
+
+
+class HHVacancyFormatter:
+    def __init__(self, hh_filters : HHFilters):
+        self.hh_filters = hh_filters
+
+    def make_humanreadable_vacancy(self, vacancy : Vacancy):
+        if vacancy.experience is not None:
+            vacancy.experience = (
+                self.hh_filters.get_dictionaries_name(vacancy.experience))
+
+        if vacancy.work_formats is not None:
+            vacancy.work_formats = [self.hh_filters.get_dictionaries_name(f)
+                                    for f in vacancy.work_formats]
+
+        if vacancy.work_schedule_by_days is not None:
+            vacancy.work_schedule_by_days = [self.hh_filters.get_dictionaries_name(f)
+                                    for f in vacancy.work_schedule_by_days]
+
+        if vacancy.working_hours is not None:
+            vacancy.working_hours = [self.hh_filters.get_dictionaries_name(f)
+                                             for f in vacancy.working_hours]
+
+    def make_humanreadable_vacancies(self, vacancies_list : list[Vacancy]):
+        for vacancy in vacancies_list:
+            self.make_humanreadable_vacancy(vacancy)
 
 if __name__ == "__main__":
     pass

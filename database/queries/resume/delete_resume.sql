@@ -1,0 +1,4 @@
+DELETE
+FROM resumes
+WHERE id = %s
+RETURNING id;

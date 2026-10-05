@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, List
 
 from fastapi import UploadFile, HTTPException, status
 from fastapi.params import Depends
@@ -33,8 +33,21 @@ async def upload_resume(file : UploadFile,
             detail=str(e)
         )
 
+
+@router.post("/get_resumes/")
+async def get_resumes(resumes_ids : List[int], resume_repository : ResumeRepositoryDep):
+    return await resume_service.get_resumes(resumes_ids, resume_repository)
+
+
+@router.delete("/delete_resume/")
+async def delete_resume(resume_id : int, resume_repository : ResumeRepositoryDep):
+    return await resume_service.delete_resume(resume_id, resume_repository)
+
+
 @router.get("/analyze_resume/{resume_id}", status_code=status.HTTP_201_CREATED)
 async def analyze_resume(resume_id : int,
                          resume_repository : ResumeRepositoryDep,
                          resume_analyzer : ResumeAnalyzerDep):
     return await resume_service.analyze_resume(resume_id, resume_repository, resume_analyzer)
+
+

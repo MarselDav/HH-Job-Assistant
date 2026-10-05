@@ -1,4 +1,7 @@
 from dataclasses import dataclass
+
+import psycopg
+from psycopg.types.json import Jsonb
 from pydantic import BaseModel
 
 class Area(BaseModel):
@@ -55,3 +58,11 @@ class Vacancy(BaseModel):
     По каким критериям кандидат подходит, по каким нет?
     """
     recap: str | None = None
+
+
+# class Resume(BaseModel):
+#     db_id: int
+#     name: str
+#     raw_text: str
+#     analysis: Jsonb
+#     created_at: psycopg.Timestamp

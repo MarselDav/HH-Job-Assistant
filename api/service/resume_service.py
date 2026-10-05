@@ -10,7 +10,7 @@ async def upload_resume(file : UploadFile, name :str, resume_repository : Resume
     try:
         text = content_bytes.decode("utf-8")
     except UnicodeDecodeError:
-        raise ValueError("Файл должен быть в кодировки utf-8")
+        raise ValueError("Файл должен быть в кодировке utf-8")
 
     resume_id = resume_repository.create(name, text)
     return {"resume_id" : resume_id, "text" : text}
@@ -39,3 +39,15 @@ async def analyze_resume(resume_id : int,
         "resume_name": resume["name"],
         "resume_analysis": resume_analysis,
     }
+
+async def get_resumes(resumes_ids, resume_repository : ResumeRepository):
+    return resume_repository.get_resumes_by_ids(resumes_ids)
+
+
+async def delete_resume(resume_id : int, resume_repository : ResumeRepository):
+    deleted_id = resume_repository.delete_resume(resume_id)
+
+    if deleted_id is None:
+        print(f"Resume with id={resume_id} was not found to delete.")
+
+    return deleted_id

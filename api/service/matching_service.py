@@ -31,8 +31,7 @@ async def semantic_matching(
         vacancy_repository: VacancyRepository,
         vacancy_retriever : VacancyRetriever,
         resume_repository : ResumeRepository,
-        resume_analyzer : ResumeAnalyzer,
-        hh_vacancy_client : HHVacancyClient) -> list[Vacancy]:
+        resume_analyzer : ResumeAnalyzer) -> list[Vacancy]:
 
     resume_id = matching_params.resume_id
     resume = resume_repository.get_by_id(resume_id)
@@ -63,8 +62,7 @@ async def llm_matching(
         vacancy_repository: VacancyRepository,
         vacancy_retriever : VacancyRetriever,
         resume_repository : ResumeRepository,
-        resume_analyzer : ResumeAnalyzer,
-        hh_vacancy_client : HHVacancyClient) -> list[Vacancy]:
+        resume_analyzer : ResumeAnalyzer) -> list[Vacancy]:
 
     resume_id = matching_params.resume_id
     resume = resume_repository.get_by_id(resume_id)

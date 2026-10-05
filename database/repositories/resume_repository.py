@@ -23,6 +23,16 @@ class ResumeRepository:
             (queries_path / "get.sql").read_text(encoding="utf-8")
         )
 
+        self.get_resumes_query = cast(
+            LiteralString,
+            (queries_path / "get_resumes.sql").read_text(encoding="utf-8")
+        )
+
+        self.delete_resume_query = cast(
+            LiteralString,
+            (queries_path / "delete_resume.sql").read_text(encoding="utf-8")
+        )
+
         self.update_query = cast(
             LiteralString,
             (queries_path / "update.sql").read_text(encoding="utf-8")
@@ -51,6 +61,30 @@ class ResumeRepository:
                 )
 
                 return cursor.fetchone()
+
+    def get_resumes_by_ids(self, db_ids: list[int]) -> dict:
+        with self.database.get_connection() as connection:
+            with connection.cursor(row_factory=dict_row) as cursor:
+                cursor.execute(
+                    self.get_resumes_query,
+                    (
+                        db_ids,
+                    )
+                )
+                resumes_dicts = cursor.fetchall()
+                return resumes_dicts
+
+    def delete_resume(self, db_id : int) -> int | None:
+        with self.database.get_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    self.delete_resume_query,
+                    (
+                        db_id,
+                    )
+                )
+                deleted_resume_id = cursor.fetchone()
+                return deleted_resume_id
 
     def update_analysis(self, resume_id: int, analysis: ResumeAnalysis):
         with self.database.get_connection() as connection:

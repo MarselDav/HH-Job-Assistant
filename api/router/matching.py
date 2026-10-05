@@ -32,13 +32,12 @@ async def semantic_matching(
         vacancy_repository : VacancyRepositoryDep,
         vacancy_retriever : VacancyRetrieverDep,
         resume_repository : ResumeRepositoryDep,
-        resume_analyzer : ResumeAnalyzerDep,
-        hh_vacancy_client : HHVacancyClientDep,):
+        resume_analyzer : ResumeAnalyzerDep):
 
     return await matching_service.semantic_matching(
         matching_params, vacancy_repository,
         vacancy_retriever, resume_repository,
-        resume_analyzer, hh_vacancy_client)
+        resume_analyzer)
 
 
 @router.post("/llm_matching/", response_model=list[Vacancy])
@@ -47,10 +46,8 @@ async def llm_matching(
         vacancy_repository : VacancyRepositoryDep,
         vacancy_retriever : VacancyRetrieverDep,
         resume_repository : ResumeRepositoryDep,
-        resume_analyzer : ResumeAnalyzerDep,
-        hh_vacancy_client : HHVacancyClientDep,):
+        resume_analyzer : ResumeAnalyzerDep):
 
     return await matching_service.llm_matching(
         matching_params, vacancy_repository,
-        vacancy_retriever, resume_repository,
-        resume_analyzer, hh_vacancy_client)
+        vacancy_retriever, resume_repository)

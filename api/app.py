@@ -3,7 +3,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from database.connection import DatabaseConnection
-from hh.hh_vacancy_client import HHVacancyClient
+from hh.hh_vacancy_client import HHVacancyClient, HHVacancyFormatter
+from hh.hh_filters import HHFilters
 from llm.resume_analyzer import ResumeAnalyzer
 from llm.llm_client import LLMClient
 from llm.cover_letter_generator import CoverLetterGenerator
@@ -22,8 +23,10 @@ from api.router.cover_letter import router as cover_letter_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.hh_vacancy_client = HHVacancyClient("hh/hh_filters.json")
-    app.state.llm_client = LLMClient("gemini-3.6-flash") # gemini-3.1-flash-lite
+    app.state.hh_filters = HHFilters("hh/hh_filters.json")
+    app.state.hh_vacancy_formatter = HHVacancyFormatter(app.state.hh_filters)
+    app.state.hh_vacancy_client = HHVacancyClient(app.state.hh_filters)
+    app.state.llm_client = LLMClient("gemini-3.1-flash-lite") # gemini-3.1-flash-lite
     app.state.resume_analyzer = ResumeAnalyzer(app.state.llm_client)
 
     app.state.embedding_model = SentenceTransformer(
