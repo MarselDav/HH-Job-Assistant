@@ -3,7 +3,7 @@ import html
 import json
 from dataclasses import asdict
 
-from hh.hh_models import VacancySearchFilters, Vacancy, Company
+from hh.hh_models import VacancySearchFilters, Vacancy, Company, SalaryInfo, WorkParameters
 from hh.hh_filters import HHFilters, DICTIONARIES_PARAMS_LIST
 import requests
 from bs4 import BeautifulSoup
@@ -117,6 +117,48 @@ class HHVacancyClient:
 
         return None
 
+    def _parse_company_info(self, company_info) -> Company:
+        return Company(
+            id=company_info.get("id"),
+            name=self._parse_company_name(company_info),
+            logo=self._parse_logo_info(company_info, "small"),
+            site_url=company_info.get("companySiteUrl"),)
+
+    def _parse_salary_info(self, vacancy) -> SalaryInfo:
+        return SalaryInfo(
+
+        )
+
+    def _parse_work_parameters(self, vacancy) -> WorkParameters:
+        return WorkParameters(
+                work_formats=self._get_elements(
+                    vacancy,
+                    "workFormats",
+                    "workFormatsElement",
+                ),
+                work_schedule_by_days=self._get_elements(
+                    vacancy,
+                    "workScheduleByDays",
+                    "workScheduleByDaysElement",
+                ),
+                working_hours=self._get_elements(
+                    vacancy,
+                    "workingHours",
+                    "workingHoursElement",
+                ))
+
+    @staticmethod
+    def _parse_vacancy_info(vacancy, company, salary_info, work_parameters) -> Vacancy:
+        return Vacancy(
+                id=vacancy.get("vacancyId"),
+                name=vacancy.get("name"),
+                company=company,
+                area=vacancy.get("area", {}).get("name"),
+                experience=vacancy.get("workExperience"),
+                response_letter_required=vacancy.get("@responseLetterRequired"),
+                salary_info=salary_info,
+                work_parameters=work_parameters,)
+
     def _parse_search_response(self, page : str) -> list[Vacancy]:
         pattern = re.compile(
             r'<template[^>]*id="HH-Lux-InitialState"[^>]*>(.*?)</template>',
@@ -138,43 +180,17 @@ class HHVacancyClient:
         print("[HHVacancyClient][_parse_search_response] "
               "JSON parsed! Vacancies count:", len(vacancies))
 
-        # from pprint import pprint
-        # pprint(vacancies[0])
+        from pprint import pprint
+        pprint(vacancies[0])
 
         for vacancy in vacancies:
-            company_info = vacancy.get("company", {})
-            company = Company(
-                id=company_info.get("id"),
-                name=self._parse_company_name(company_info),
-                logo=self._parse_logo_info(company_info, "small"),
-                site_url=company_info.get("companySiteUrl"),
-            )
-
-            vacancies_list.append(Vacancy(
-                id=vacancy.get("vacancyId"),
-                name=vacancy.get("name"),
-                work_schedule=vacancy.get("@workSchedule"),
-                response_letter_required=vacancy.get("@responseLetterRequired"),
-                company=company,
-                area=vacancy.get("area", {}).get("name"),
-                experience=vacancy.get("workExperience"),
-                salary=vacancy.get("salary"),
-                work_formats=self._get_elements(
-                    vacancy,
-                    "workFormats",
-                    "workFormatsElement",
-                ),
-                work_schedule_by_days=self._get_elements(
-                    vacancy,
-                    "workScheduleByDays",
-                    "workScheduleByDaysElement",
-                ),
-                working_hours=self._get_elements(
-                    vacancy,
-                    "workingHours",
-                    "workingHoursElement",
-                ),
-            ))
+            company = self._parse_company_info(vacancy.get("company", {}))
+            salary_info = self._parse_salary_info(vacancy)
+            work_parameters = self._parse_work_parameters(vacancy)
+            vacancies_list.append(self._parse_vacancy_info(vacancy,
+                                                           company,
+                                                           salary_info,
+                                                           work_parameters))
 
         return vacancies_list
 
@@ -190,42 +206,15 @@ class HHVacancyClient:
         text = content_div.get_text(separator="\n", strip=True)  # strip - убрать лишние пробелы по краям
         return text
 
-
-
-class HHVacancyFormatter:
-    def __init__(self, hh_filters : HHFilters):
-        self.hh_filters = hh_filters
-
-    def make_humanreadable_vacancy(self, vacancy : Vacancy):
-        if vacancy.experience is not None:
-            vacancy.experience = (
-                self.hh_filters.get_dictionaries_name(vacancy.experience))
-
-        if vacancy.work_formats is not None:
-            vacancy.work_formats = [self.hh_filters.get_dictionaries_name(f)
-                                    for f in vacancy.work_formats]
-
-        if vacancy.work_schedule_by_days is not None:
-            vacancy.work_schedule_by_days = [self.hh_filters.get_dictionaries_name(f)
-                                    for f in vacancy.work_schedule_by_days]
-
-        if vacancy.working_hours is not None:
-            vacancy.working_hours = [self.hh_filters.get_dictionaries_name(f)
-                                             for f in vacancy.working_hours]
-
-    def make_humanreadable_vacancies(self, vacancies_list : list[Vacancy]):
-        for vacancy in vacancies_list:
-            self.make_humanreadable_vacancy(vacancy)
-
 if __name__ == "__main__":
-    pass
-    # vsf = VacancySearchFilters(
-    #     text="C++ developer",
-    # )
-    #
-    # hh_filters = HHFilters("hh_filters.json")
-    # hh = HHVacancyClient(hh_filters)
-    # vac_list = hh.search(vsf)
+    # pass
+    vsf = VacancySearchFilters(
+        text="C++ developer",
+    )
+
+    hh_filters = HHFilters("hh_filters.json")
+    hh = HHVacancyClient(hh_filters)
+    vac_list = hh.search(vsf)
     # hh.load_descriptions(vac_list)
 
     # print(vac_list[0])

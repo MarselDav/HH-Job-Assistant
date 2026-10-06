@@ -2,7 +2,8 @@ from database.repositories.company_repository import CompanyRepository
 from database.repositories.vacancy_repository import VacancyRepository
 from hh.hh_filters import HHFilters
 from hh.hh_models import VacancySearchFilters, Vacancy
-from hh.hh_vacancy_client import HHVacancyClient, HHVacancyFormatter
+from hh.hh_vacancy_client import HHVacancyClient
+from hh.hh_vacancy_formatter import HHVacancyFormatter
 
 
 async def get_vacancies(

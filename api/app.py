@@ -4,7 +4,8 @@ from fastapi import FastAPI
 
 from database.connection import DatabaseConnection
 from database.repositories.company_repository import CompanyRepository
-from hh.hh_vacancy_client import HHVacancyClient, HHVacancyFormatter
+from hh.hh_vacancy_client import HHVacancyClient
+from hh.hh_vacancy_formatter import HHVacancyFormatter
 from hh.hh_filters import HHFilters
 from llm.resume_analyzer import ResumeAnalyzer
 from llm.llm_client import LLMClient

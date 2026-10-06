@@ -4,7 +4,8 @@ from database.repositories.company_repository import CompanyRepository
 from database.repositories.resume_repository import ResumeRepository
 from database.repositories.vacancy_repository import VacancyRepository
 from hh.hh_filters import HHFilters
-from hh.hh_vacancy_client import HHVacancyClient, HHVacancyFormatter
+from hh.hh_vacancy_client import HHVacancyClient
+from hh.hh_vacancy_formatter import HHVacancyFormatter
 from llm.cover_letter_generator import CoverLetterGenerator
 from llm.resume_analyzer import ResumeAnalyzer
 from matching.vacancy_retriever import VacancyRetriever
