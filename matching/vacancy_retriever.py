@@ -1,7 +1,7 @@
 from statistics import mean
 from sentence_transformers import SentenceTransformer
 from hh.hh_filters import HHFilters
-from hh.hh_models import Vacancy
+from hh.hh_models import Vacancy, MatchingResult
 from llm.llm_client import LLMClient
 from llm.resume_analyzer import ResumeAnalysis
 from pydantic import BaseModel, Field
@@ -63,8 +63,8 @@ class VacancyRetriever:
 
         normalized_scores = self._normalize_scores(final_scores_list)
         for i, normalized_score in enumerate(normalized_scores):
-            vacancies_list[i].bm25_score = normalized_score
-            vacancies_list[i].total_score += self.bm25_coef * normalized_score
+            vacancies_list[i].matching_result.bm25_score = normalized_score
+            vacancies_list[i].matching_result.total_score += self.bm25_coef * normalized_score
 
         return normalized_scores
 
@@ -91,8 +91,8 @@ class VacancyRetriever:
         normalized_scores = self._normalize_scores(similarities[0].tolist())
 
         for i, normalized_score in enumerate(normalized_scores):
-            vacancies_list[i].embedding_score = normalized_score
-            vacancies_list[i].total_score += self.embedding_coef * normalized_score
+            vacancies_list[i].matching_result.embedding_score = normalized_score
+            vacancies_list[i].matching_result.total_score += self.embedding_coef * normalized_score
 
         return normalized_scores
 
@@ -131,7 +131,7 @@ class VacancyRetriever:
         self.custom_bm25_scores(vacancies_list, skill_weights)
         self.embedding_scores(resume_analysis, vacancies_list)
 
-        vacancies_list.sort(key=lambda v: v.total_score, reverse=True)
+        vacancies_list.sort(key=lambda v: v.matching_result.total_score, reverse=True)
 
     def retrieve(self, resume_analysis : ResumeAnalysis, vacancies_list : list[Vacancy]):
         self.semantic_matching(resume_analysis, vacancies_list)
@@ -140,7 +140,7 @@ class VacancyRetriever:
             :self.vacancy_cnt_for_llm_matching]
         )
 
-        vacancies_list.sort(key=lambda v: v.total_score, reverse=True)
+        vacancies_list.sort(key=lambda v: v.matching_result.total_score, reverse=True)
 
     @staticmethod
     def _normalize_scores(scores : list[float]) -> list[float]:

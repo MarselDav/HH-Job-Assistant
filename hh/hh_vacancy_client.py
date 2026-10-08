@@ -4,7 +4,7 @@ import json
 from dataclasses import asdict
 
 from hh.hh_models import VacancySearchFilters, Vacancy, Company, SalaryInfo, WorkParameters
-from hh.hh_filters import HHFilters, DICTIONARIES_PARAMS_LIST
+from hh.hh_filters import HHFilters, DICTIONARIES_PARAMS_DICT
 import requests
 from bs4 import BeautifulSoup
 
@@ -71,7 +71,7 @@ class HHVacancyClient:
                 vacancy_search_filters["industry"][industry_idx] = self.hh_filters.get_industry_id(
                     industries_list[industry_idx])
 
-        for param in DICTIONARIES_PARAMS_LIST:
+        for param in DICTIONARIES_PARAMS_DICT.keys():
             if vacancy_search_filters.get(param) is not None:
                 for name_idx in range(len(vacancy_search_filters[param])):
                     vacancy_search_filters[param][name_idx] = self.hh_filters.get_dictionaries_name_id(
@@ -124,9 +124,19 @@ class HHVacancyClient:
             logo=self._parse_logo_info(company_info, "small"),
             site_url=company_info.get("companySiteUrl"),)
 
-    def _parse_salary_info(self, vacancy) -> SalaryInfo:
-        return SalaryInfo(
+    @staticmethod
+    def _parse_salary_info(salary_info) -> SalaryInfo | None:
+        if salary_info is None:
+            return None
 
+        salary_from = salary_info.get("from")
+        salary_to = salary_info.get("to")
+
+        return SalaryInfo(
+            salary_from=salary_from,
+            salary_to=salary_to,
+            salary_mode=salary_info.get("mode"),
+            currency=salary_info.get("currencyCode")
         )
 
     def _parse_work_parameters(self, vacancy) -> WorkParameters:
@@ -180,12 +190,12 @@ class HHVacancyClient:
         print("[HHVacancyClient][_parse_search_response] "
               "JSON parsed! Vacancies count:", len(vacancies))
 
-        from pprint import pprint
-        pprint(vacancies[0])
+        # from pprint import pprint
+        # pprint(vacancies[0])
 
         for vacancy in vacancies:
             company = self._parse_company_info(vacancy.get("company", {}))
-            salary_info = self._parse_salary_info(vacancy)
+            salary_info = self._parse_salary_info(vacancy.get("compensation"))
             work_parameters = self._parse_work_parameters(vacancy)
             vacancies_list.append(self._parse_vacancy_info(vacancy,
                                                            company,

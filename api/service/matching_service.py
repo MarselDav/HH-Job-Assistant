@@ -9,9 +9,9 @@ from api.service import resume_service
 from api.dependencies import get_resume_repository, get_resume_analyzer, get_vacancy_repository, get_hh_vacancy_client
 from database.repositories.resume_repository import ResumeRepository
 from database.repositories.vacancy_repository import VacancyRepository
-from hh import hh_vacancy_client
 from hh.hh_models import Vacancy
 from hh.hh_vacancy_client import HHVacancyClient
+from hh.hh_vacancy_formatter import HHVacancyFormatter
 from llm.resume_analyzer import ResumeAnalyzer, ResumeAnalysis
 from matching.vacancy_retriever import VacancyRetriever
 from api.service import resume_service
@@ -28,16 +28,18 @@ class MatchingResumeParams(BaseModel):
 
 async def semantic_matching(
         matching_params: MatchingResumeParams,
+        hh_vacancy_client : HHVacancyClient,
         vacancy_repository: VacancyRepository,
         vacancy_retriever : VacancyRetriever,
         resume_repository : ResumeRepository,
-        resume_analyzer : ResumeAnalyzer) -> list[Vacancy]:
+        resume_analyzer : ResumeAnalyzer,
+        hh_vacancy_formatter : HHVacancyFormatter) -> list[Vacancy]:
 
     resume_id = matching_params.resume_id
     resume = resume_repository.get_by_id(resume_id)
 
     if resume is None:
-        raise ValueError(f"Resume with id={resume_id} not found")
+        raise ValueError(f"[API][semantic_matching] Resume with id={resume_id} not found")
 
     vacancies_ids = matching_params.vacancies_ids
     vacancies_list = vacancy_repository.get_vacancies_by_ids(vacancies_ids)
@@ -50,9 +52,11 @@ async def semantic_matching(
 
     for i, vacancy in enumerate(vacancies_list):
         if vacancy.description is None:
-            vacancies_list[i].description = await vacancy_service.get_vacancy_description(vacancy.db_id, vacancy_repository, hh_vacancy_client)
+            vacancies_list[i].description = await vacancy_service.get_vacancy_description(
+                vacancy.db_id, vacancy_repository, hh_vacancy_client)
 
     vacancy_retriever.semantic_matching(resume_analysis, vacancies_list)
+    hh_vacancy_formatter.make_humanreadable_vacancies(vacancies_list)
 
     return vacancies_list
 

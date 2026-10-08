@@ -44,9 +44,10 @@ class VacancyRepository:
                         vacancy.area,
                         vacancy.experience,
                         vacancy.response_letter_required,
-                        vacancy.salary_info.salary,
+                        vacancy.salary_info.salary_from,
+                        vacancy.salary_info.salary_to,
                         vacancy.salary_info.salary_mode,
-                        vacancy.salary_info.currency_code,
+                        vacancy.salary_info.currency,
                         vacancy.work_parameters.work_formats,
                         vacancy.work_parameters.work_schedule_by_days,
                         vacancy.work_parameters.working_hours,
@@ -96,4 +97,5 @@ class VacancyRepository:
                     )
                 )
                 vacancies_dicts = cursor.fetchall()
-                return [Vacancy(**row) for row in vacancies_dicts]
+                # return [Vacancy(**row) for row in vacancies_dicts]
+                return [Vacancy.model_validate(row) for row in vacancies_dicts]

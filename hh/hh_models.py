@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import psycopg
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel
+from typing import Literal
 
 
 class VacancySearchFilters(BaseModel):
@@ -42,19 +43,11 @@ class WorkParameters(BaseModel):
     work_schedule_by_days: list[str] | None = None
     working_hours: list[str] | None = None
 
-
-"""
- 'compensation': {'currencyCode': 'RUR',
-                  'from': 200000,
-                  'gross': True,
-                  'mode': 'MONTH',
-                  'perModeFrom': 200000},
-"""
-
 class SalaryInfo(BaseModel):
-    salary: int | None = None
+    salary_from: int | None = None
+    salary_to: int | None = None
     salary_mode : str | None = None
-    currency_code : str | None = None
+    currency : str | None = None
 
 class Vacancy(BaseModel):
     db_id : int | None = None
@@ -67,7 +60,16 @@ class Vacancy(BaseModel):
     salary_info: SalaryInfo | None = None
     work_parameters : WorkParameters | None = None
     description: str | None = None
-    matching_result : MatchingResult | None = None
+    matching_result : MatchingResult = MatchingResult()
+
+
+"""
+ 'compensation': {'currencyCode': 'RUR',
+                  'from': 200000,
+                  'gross': True,
+                  'mode': 'MONTH',
+                  'perModeFrom': 200000},
+"""
 
 # class Resume(BaseModel):
 #     db_id: int

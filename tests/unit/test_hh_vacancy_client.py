@@ -1,5 +1,8 @@
 import pytest
 
+from hh.hh_models import SalaryInfo
+from hh.hh_vacancy_client import HHVacancyClient
+
 
 @pytest.mark.parametrize(
     ["company_info", "expected_result"],
@@ -72,5 +75,76 @@ import pytest
     ),
     ]
 )
-def test_parse_logo_info(test_hh_vacancy_client, company_info, expected_result):
+def test_parse_logo_info(test_hh_vacancy_client : HHVacancyClient,
+                         company_info : dict,
+                         expected_result : str):
     assert test_hh_vacancy_client._parse_logo_info(company_info, "small") == expected_result
+
+
+@pytest.mark.parametrize(
+    ["salary_info", "expected_result"],
+    [
+        (
+            {
+                'currencyCode': 'RUR',
+                'from': 200000,
+                'gross': True,
+                'mode': 'MONTH',
+                'perModeFrom': 200000
+            },
+            SalaryInfo(
+                salary_from=200000,
+                salary_to=None,
+                salary_mode='MONTH',
+                currency='RUR'
+            )
+        ),
+        (
+            {
+                'currencyCode': 'RUR',
+                'to': 160000,
+                'gross': True,
+                'mode': 'MONTH',
+                'perModeFrom': 200000
+            },
+            SalaryInfo(
+                salary_from=None,
+                salary_to=160000,
+                salary_mode='MONTH',
+                currency='RUR'
+            )
+        ),
+        (
+            {
+                'from': 80000,
+                'to': 150000,
+                'currencyCode': 'RUR',
+                'gross': False,
+                'perModeFrom': 80000,
+                'perModeTo': 150000,
+                'mode': 'MONTH',
+                'frequency': 'TWICE_PER_MONTH'
+            },
+            SalaryInfo(
+                salary_from=80000,
+                salary_to=150000,
+                salary_mode='MONTH',
+                currency='RUR'
+            )
+        ),
+        (
+            {'noCompensation': {}},
+            SalaryInfo(
+                salary_from=None,
+                salary_to=None,
+                salary_mode=None,
+                currency=None
+            )
+        ),
+    ]
+)
+def test_parse_salary_info(test_hh_vacancy_client : HHVacancyClient,
+                         salary_info : dict,
+                         expected_result : SalaryInfo):
+
+    assert test_hh_vacancy_client._parse_salary_info(salary_info) == expected_result

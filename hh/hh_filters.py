@@ -8,13 +8,18 @@ AREAS_URL = "https://api.hh.ru/areas"
 INDUSTRIES_URL = "https://api.hh.ru/industries"
 PROFESSIONAL_ROLES_URL = "https://api.hh.ru/professional_roles"
 
-DICTIONARIES_PARAMS_LIST = ["experience",
-                            "employment_form",
-                            "work_format",
-                            "working_hours",
-                            "work_schedule_by_days",
-                            "vacancy_label",
-                            "vacancy_search_order"]
+
+DICTIONARIES_PARAMS_DICT = {
+        "experience" : "name",
+        "employment_form" : "name",
+        "work_format" : "name",
+        "working_hours" : "name",
+        "work_schedule_by_days" : "name",
+        "vacancy_label" : "name",
+        "vacancy_search_order" : "name",
+        "currency" : "abbr",
+        "salary_range_mode" : "name",
+    }
 
 
 class HHFilterParser:
@@ -34,14 +39,14 @@ class HHFilterParser:
 
     @staticmethod
     def parse_dictionaries(dictionaries_response: dict) -> dict:
-        dictionaries_dict = {param: {} for param in DICTIONARIES_PARAMS_LIST}
+        dictionaries_dict = {key: {} for key, value in DICTIONARIES_PARAMS_DICT.items()}
 
         for key in dictionaries_dict.keys():
             for parameter in dictionaries_response[key]:
-                if parameter.get("name") is not None:
-                    dictionaries_dict[key][parameter["name"].replace('\xa0', ' ')] = {"id": parameter["id"]}
-
-        # pprint(dictionaries_dict, indent=4, width=100)
+                parsing_param = DICTIONARIES_PARAMS_DICT[key]
+                if parameter.get(parsing_param) is not None:
+                    dictionaries_dict[key][parameter[parsing_param].replace('\xa0', ' ')] = \
+                        {"id": parameter.get("id") if parameter.get("id") is not None else parameter.get("code"),}
 
         return dictionaries_dict
 
@@ -315,11 +320,11 @@ class HHFilters:
 
 
 if __name__ == "__main__":
-    # parser = HHFilterParser()
-    # filters_ = parser.parse_all()
-    # parser.save_filters(filters_, "hh_filters.json")
+    parser = HHFilterParser()
+    filters_ = parser.parse_all()
+    parser.save_filters(filters_, "hh_filters.json")
 
-    filter = HHFilters("hh_filters.json")
-    print(filter.get_area_id("Уфа"))
+    # filter = HHFilters("hh_filters.json")
+    # print(filter.get_area_id("Уфа"))
 
     # filter.get_top_keys()
