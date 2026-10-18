@@ -86,7 +86,7 @@ class ResumeAnalyzer:
 
 
 if __name__ == "__main__":
-    with open("../resume_example.txt", "r", encoding="utf-8") as f:
+    with open("../../resume_example.txt", "r", encoding="utf-8") as f:
         resume_str = f.read()
 
     # print(json.dumps(ResumeAnalysis.model_json_schema(), indent=2, ensure_ascii=False))

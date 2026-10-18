@@ -11,3 +11,4 @@ python-multipart==0.0.32
 psycopg_pool==3.3.2
 google==3.0.0
 pytest==9.1.1
+sqlalchemy
